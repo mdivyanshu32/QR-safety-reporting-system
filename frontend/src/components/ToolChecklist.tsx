@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wrench, ShieldCheck, Camera, CheckCircle2, XCircle, Mail } from 'lucide-react';
+import { Wrench, ShieldCheck, CheckCircle2, XCircle, Mail, FileText, Upload, Trash2, FileSpreadsheet } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import type { ReportSubmissionPayload } from '../types/safety';
 
@@ -10,6 +10,13 @@ interface ChecklistItem {
   category: string;
   passed: boolean;
   notes: string;
+}
+
+interface UploadedDocument {
+  name: string;
+  size: string;
+  type: 'PDF' | 'EXCEL' | 'IMAGE';
+  dataUrl: string;
 }
 
 interface ToolChecklistProps {
@@ -23,7 +30,8 @@ export const ToolChecklist: React.FC<ToolChecklistProps> = ({ onSubmit }) => {
   const [location, setLocation] = useState<string>('Main Substation Yard');
   const [division, setDivision] = useState<string>('South Delhi');
   const [recipientEmail, setRecipientEmail] = useState<string>('safety.officer@powergrid.in');
-  const [evidenceImages, setEvidenceImages] = useState<string[]>([]);
+  
+  const [uploadedDocs, setUploadedDocs] = useState<UploadedDocument[]>([]);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
   const [items, setItems] = useState<ChecklistItem[]>([
@@ -109,18 +117,44 @@ export const ToolChecklist: React.FC<ToolChecklistProps> = ({ onSubmit }) => {
   const failCount = items.length - passedCount;
   const scorePercent = Math.round((passedCount / items.length) * 100);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
+
     Array.from(files).forEach((file) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
-          setEvidenceImages((prev) => [...prev, reader.result as string]);
+          let docType: 'PDF' | 'EXCEL' | 'IMAGE' = 'IMAGE';
+          if (file.name.toLowerCase().endsWith('.pdf') || file.type.includes('pdf')) {
+            docType = 'PDF';
+          } else if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls') || file.type.includes('sheet') || file.type.includes('excel')) {
+            docType = 'EXCEL';
+          }
+
+          setUploadedDocs((prev) => [
+            ...prev,
+            {
+              name: file.name,
+              size: formatFileSize(file.size),
+              type: docType,
+              dataUrl: reader.result as string,
+            },
+          ]);
         }
       };
       reader.readAsDataURL(file);
     });
+  };
+
+  const handleRemoveDoc = (index: number) => {
+    setUploadedDocs((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmitChecklist = async (e: React.FormEvent) => {
@@ -136,18 +170,20 @@ export const ToolChecklist: React.FC<ToolChecklistProps> = ({ onSubmit }) => {
       )
       .join('\n');
 
+    const docNames = uploadedDocs.map((d) => `${d.name} (${d.type}, ${d.size})`).join(', ');
+
     const payload: ReportSubmissionPayload = {
       type: 'TOOL',
       employeeName: employeeName || 'Electrical Field Technician',
       employeeId: employeeId || 'EMP-CHECKLIST',
       location,
       division,
-      toolType: 'Whole Electrical Safety Kit Checklist',
-      problemType: failCount > 0 ? 'Defective Tool Identified in Checklist' : 'Routine Inspection Passed',
+      toolType: 'Manual PDF/Excel Checklist & Electrical Kit Inspection',
+      problemType: failCount > 0 ? 'Defective Tool Identified in Manual Checklist' : 'Routine Inspection Passed',
       severity: failCount > 2 ? 'HIGH' : failCount > 0 ? 'MEDIUM' : 'LOW',
-      description: `Electrical Tool Safety Checklist Inspection Score: ${scorePercent}% (${passedCount}/${items.length} Passed).\n\nDetails:\n${summaryText}`,
+      description: `Electrical Tool Safety Checklist Score: ${scorePercent}% (${passedCount}/${items.length} Passed).\n\nUploaded Checklist Files: ${docNames || 'None'}\n\nDetails:\n${summaryText}`,
       immediateAction: failCount > 0 ? 'Defective items tagged OUT OF SERVICE immediately.' : 'All tools certified safe for field operation.',
-      evidenceImages,
+      evidenceImages: uploadedDocs.map((d) => d.dataUrl),
       recipientEmail,
     };
 
@@ -168,10 +204,10 @@ export const ToolChecklist: React.FC<ToolChecklistProps> = ({ onSubmit }) => {
           </div>
           <div>
             <h1 className="text-2xl font-black text-white flex items-center gap-2">
-              <span>{language === 'hi' ? 'टूल्स एवं सुरक्षा उपकरण की पूरी चेकलिस्ट' : 'Complete Electrical Tool Safety Checklist'}</span>
+              <span>{language === 'hi' ? 'टूल्स चेकलिस्ट अपलोड (PDF / Excel Format)' : 'Upload Tool Checklist (PDF / Excel)'}</span>
             </h1>
             <p className="text-xs text-slate-400 font-medium mt-1">
-              Verify 1000V insulation, dielectric gloves, earthing rods, and safety harness before entering high voltage yards.
+              Upload your signed PDF/Excel inspection sheet or complete the 8-point electrical tool verification below.
             </p>
           </div>
         </div>
@@ -188,7 +224,7 @@ export const ToolChecklist: React.FC<ToolChecklistProps> = ({ onSubmit }) => {
         {/* Basic Info & Email Field */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
           <h2 className="text-sm font-extrabold text-amber-400 uppercase tracking-wider border-b border-slate-800 pb-2">
-            1. Inspector Details & Editable Email Notification
+            1. Inspector Details & Editable Target Email
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm">
@@ -247,11 +283,11 @@ export const ToolChecklist: React.FC<ToolChecklistProps> = ({ onSubmit }) => {
           <div>
             <label className="block text-xs font-bold text-amber-400 mb-1 flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-amber-400" />
-              <span>Notification Email Target (Editable - Instant Mail Alert sent on submission)</span>
+              <span>Notification Target Email (Editable - Ticket alert sent to this email)</span>
             </label>
             <input
               type="email"
-              placeholder="e.g. safety.officer@powergrid.in, inspector@discom.com"
+              placeholder="e.g. safety.officer@powergrid.in"
               required
               value={recipientEmail}
               onChange={(e) => setRecipientEmail(e.target.value)}
@@ -260,11 +296,88 @@ export const ToolChecklist: React.FC<ToolChecklistProps> = ({ onSubmit }) => {
           </div>
         </div>
 
-        {/* Checklist Verification Items */}
+        {/* Manual Document Upload (PDF / Excel / Images) */}
+        <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-5 shadow-lg space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+            <h2 className="text-sm font-extrabold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+              <Upload className="w-4 h-4 text-amber-400" />
+              <span>2. Manual PDF or Excel Checklist Upload (.pdf, .xlsx, .xls)</span>
+            </h2>
+            <span className="text-[11px] font-bold text-slate-400">PDF / Excel / Photo supported</span>
+          </div>
+
+          <div className="border-2 border-dashed border-amber-500/40 hover:border-amber-400 rounded-2xl p-6 bg-slate-950/80 text-center space-y-3 transition-colors">
+            <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto">
+              <FileSpreadsheet className="w-7 h-7" />
+            </div>
+            <div>
+              <p className="text-sm font-extrabold text-white">
+                {language === 'hi' ? 'PDF या Excel टूल चेकलिस्ट फाइल अपलोड करें' : 'Click or Drag & Drop PDF / Excel Tool Checklist File'}
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                Supports PDF documents, Excel spreadsheets (.xlsx, .xls), and scanned inspection images
+              </p>
+            </div>
+
+            <label className="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs px-5 py-2.5 rounded-xl cursor-pointer shadow-lg shadow-amber-500/20 transition-all">
+              <Upload className="w-4 h-4 stroke-[2.5]" />
+              <span>{language === 'hi' ? 'फाइल चुनें (Browse File)' : 'Browse PDF / Excel File'}</span>
+              <input
+                type="file"
+                accept=".pdf,.xlsx,.xls,.doc,.docx,image/*"
+                multiple
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
+          </div>
+
+          {uploadedDocs.length > 0 && (
+            <div className="space-y-2 pt-2">
+              <span className="text-xs font-bold text-slate-400 block">Uploaded Manual Files ({uploadedDocs.length}):</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {uploadedDocs.map((doc, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3 shadow-inner"
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="p-2 bg-slate-900 rounded-lg border border-slate-800 shrink-0">
+                        {doc.type === 'PDF' ? (
+                          <FileText className="w-5 h-5 text-rose-400" />
+                        ) : doc.type === 'EXCEL' ? (
+                          <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
+                        ) : (
+                          <FileText className="w-5 h-5 text-amber-400" />
+                        )}
+                      </div>
+                      <div className="truncate">
+                        <p className="text-xs font-bold text-white truncate">{doc.name}</p>
+                        <span className="text-[10px] font-semibold text-amber-400 uppercase">
+                          {doc.type} • {doc.size}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveDoc(idx)}
+                      className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* 8-Point Electrical Checklist Items */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
           <div className="flex items-center justify-between border-b border-slate-800 pb-2">
             <h2 className="text-sm font-extrabold text-amber-400 uppercase tracking-wider">
-              2. 8-Point Tool Safety Verification Items
+              3. Quick 8-Point Tool Safety Verification Items
             </h2>
             <span className="text-xs text-slate-400 font-bold">
               Tap PASS or FAIL for each item
@@ -336,28 +449,6 @@ export const ToolChecklist: React.FC<ToolChecklistProps> = ({ onSubmit }) => {
           </div>
         </div>
 
-        {/* Defect Photo Attachments */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-          <h2 className="text-sm font-extrabold text-amber-400 uppercase tracking-wider border-b border-slate-800 pb-2 flex items-center gap-2">
-            <Camera className="w-4 h-4" />
-            <span>3. Upload Tool Inspection / Defect Evidence Photos</span>
-          </h2>
-
-          <div className="flex flex-wrap gap-3">
-            {evidenceImages.map((img, idx) => (
-              <div key={idx} className="relative w-24 h-24 rounded-xl overflow-hidden border border-slate-700">
-                <img src={img} alt="Evidence" className="w-full h-full object-cover" />
-              </div>
-            ))}
-
-            <label className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-700 hover:border-amber-400 bg-slate-950 flex flex-col items-center justify-center cursor-pointer text-slate-400 hover:text-amber-400 transition-colors">
-              <Camera className="w-6 h-6 mb-1" />
-              <span className="text-[10px] font-bold">+ Upload</span>
-              <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
-            </label>
-          </div>
-        </div>
-
         {/* Submit Action */}
         <button
           type="submit"
@@ -365,7 +456,7 @@ export const ToolChecklist: React.FC<ToolChecklistProps> = ({ onSubmit }) => {
           className="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-base py-4 rounded-xl shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
         >
           <ShieldCheck className="w-6 h-6" />
-          <span>{submitting ? 'Submitting Inspection Checklist...' : 'SUBMIT TOOL SAFETY INSPECTION CHECKLIST'}</span>
+          <span>{submitting ? 'Submitting Inspection Checklist...' : 'SUBMIT MANUAL PDF / EXCEL TOOL CHECKLIST'}</span>
         </button>
       </form>
     </div>

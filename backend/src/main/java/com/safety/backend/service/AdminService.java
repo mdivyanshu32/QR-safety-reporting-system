@@ -10,6 +10,7 @@ import com.safety.backend.model.Report;
 import com.safety.backend.repository.AdminUserRepository;
 import com.safety.backend.repository.CorrectiveActionRepository;
 import com.safety.backend.repository.ReportRepository;
+import com.safety.backend.repository.SystemSettingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,14 +24,17 @@ public class AdminService {
     private final AdminUserRepository adminUserRepository;
     private final ReportRepository reportRepository;
     private final CorrectiveActionRepository correctiveActionRepository;
+    private final SystemSettingRepository systemSettingRepository;
 
     @Autowired
     public AdminService(AdminUserRepository adminUserRepository,
                         ReportRepository reportRepository,
-                        CorrectiveActionRepository correctiveActionRepository) {
+                        CorrectiveActionRepository correctiveActionRepository,
+                        SystemSettingRepository systemSettingRepository) {
         this.adminUserRepository = adminUserRepository;
         this.reportRepository = reportRepository;
         this.correctiveActionRepository = correctiveActionRepository;
+        this.systemSettingRepository = systemSettingRepository;
     }
 
     public AdminLoginResponse authenticateAdmin(AdminLoginRequest request) {
@@ -120,5 +124,19 @@ public class AdminService {
         correctiveActionRepository.save(action);
 
         return report;
+    }
+
+    public String getDefaultSafetyEmail() {
+        return systemSettingRepository.findById("DEFAULT_SAFETY_EMAIL")
+                .map(com.safety.backend.model.SystemSetting::getSettingValue)
+                .orElse("safety.officer@powergrid.in");
+    }
+
+    @Transactional
+    public String saveDefaultSafetyEmail(String email) {
+        String cleanEmail = email != null ? email.trim() : "safety.officer@powergrid.in";
+        com.safety.backend.model.SystemSetting setting = new com.safety.backend.model.SystemSetting("DEFAULT_SAFETY_EMAIL", cleanEmail);
+        systemSettingRepository.save(setting);
+        return cleanEmail;
     }
 }

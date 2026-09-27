@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { ReportDetailsResponse, DashboardStats, ReportStatus } from '../../types/safety';
 import { SubstationQrGenerator } from './SubstationQrGenerator';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { ShieldAlert, Search, Eye, X } from 'lucide-react';
+import { ShieldAlert, Search, Eye, X, Mail, Save, CheckCircle } from 'lucide-react';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -11,10 +11,13 @@ interface AdminDashboardProps {
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'reports' | 'qr'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'reports' | 'settings' | 'qr'>('overview');
   
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [reports, setReports] = useState<ReportDetailsResponse[]>([]);
+  const [defaultEmail, setDefaultEmail] = useState<string>('safety.officer@powergrid.in');
+  const [savingEmail, setSavingEmail] = useState<boolean>(false);
+  const [emailSavedSuccess, setEmailSavedSuccess] = useState<boolean>(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -34,9 +37,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsRes, reportsRes] = await Promise.all([
+      const [statsRes, reportsRes, emailRes] = await Promise.all([
         fetch(`${API_BASE}/api/admin/stats`),
-        fetch(`${API_BASE}/api/admin/reports`)
+        fetch(`${API_BASE}/api/admin/reports`),
+        fetch(`${API_BASE}/api/admin/settings/email`),
       ]);
 
       if (statsRes.ok) {
@@ -47,6 +51,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         const reportsData = await reportsRes.json();
         setReports(reportsData);
       }
+      if (emailRes.ok) {
+        const emailData = await emailRes.text();
+        if (emailData && emailData.trim()) {
+          setDefaultEmail(emailData.trim());
+        }
+      }
     } catch (err) {
       console.error('Error fetching admin data:', err);
     }
@@ -55,6 +65,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  const handleSaveDefaultEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingEmail(true);
+    setEmailSavedSuccess(false);
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/settings/email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: defaultEmail,
+      });
+
+      if (res.ok) {
+        setEmailSavedSuccess(true);
+        setTimeout(() => setEmailSavedSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error('Failed to save default email:', err);
+    } finally {
+      setSavingEmail(false);
+    }
+  };
 
   const handleOpenReportModal = (item: ReportDetailsResponse) => {
     setSelectedReportItem(item);
@@ -134,8 +167,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <ShieldAlert className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-white">SAFETY MANAGEMENT DASHBOARD</h1>
-            <p className="text-xs text-slate-400">Live Incident Monitoring & Root-Cause Lifecycle Control</p>
+            <h1 className="text-xl font-black text-white">SAFETY ADMIN PORTAL (PASSWORD PROTECTED)</h1>
+            <p className="text-xs text-slate-400">Live Incident Monitoring & Backend Notification Email Configuration</p>
           </div>
         </div>
 
@@ -156,7 +189,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 activeTab === 'reports' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
               }`}
             >
-              Reports Table ({filteredReports.length})
+              Reports ({filteredReports.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+                activeTab === 'settings' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              Email Setup
             </button>
             <button
               onClick={() => setActiveTab('qr')}
@@ -209,6 +250,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           <p className="text-2xl font-black text-emerald-400 mt-1">{stats?.closedReports || 0}</p>
         </div>
       </div>
+
+      {/* Settings Tab: Default Email Configuration */}
+      {activeTab === 'settings' && (
+        <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 shadow-xl space-y-5 max-w-2xl">
+          <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+            <div className="p-3 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/30">
+              <Mail className="w-6 h-6" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black text-white">Backend Default Safety Notification Email</h2>
+              <p className="text-xs text-slate-400">
+                Configure which email address will receive automatic ticket alerts whenever any safety report is submitted.
+              </p>
+            </div>
+          </div>
+
+          <form onSubmit={handleSaveDefaultEmail} className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-300 mb-1">
+                Target Safety Officer Email Address *
+              </label>
+              <input
+                type="email"
+                required
+                value={defaultEmail}
+                onChange={(e) => setDefaultEmail(e.target.value)}
+                placeholder="e.g. safety.head@powergrid.in, admin@discom.in"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm text-amber-300 font-bold focus:border-amber-400 focus:outline-none"
+              />
+            </div>
+
+            {emailSavedSuccess && (
+              <div className="p-3 bg-emerald-950/80 border border-emerald-500/40 rounded-xl text-xs text-emerald-300 font-bold flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-emerald-400" />
+                <span>Backend default notification email updated successfully! All new tickets will be sent to this email.</span>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={savingEmail}
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm px-5 py-3 rounded-xl shadow-lg flex items-center gap-2 transition-all"
+            >
+              <Save className="w-4 h-4 stroke-[3]" />
+              <span>{savingEmail ? 'Saving...' : 'Save Default Email in Backend'}</span>
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* Main Tab Views */}
       {activeTab === 'overview' && (
@@ -401,7 +491,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
                 {selectedReportItem.evidenceImages && selectedReportItem.evidenceImages.length > 0 && (
                   <div>
-                    <span className="text-slate-400 font-semibold block mb-1">Evidence Gallery ({selectedReportItem.evidenceImages.length} photos):</span>
+                    <span className="text-slate-400 font-semibold block mb-1">Evidence Gallery / Attachments ({selectedReportItem.evidenceImages.length}):</span>
                     <div className="flex gap-2 flex-wrap">
                       {selectedReportItem.evidenceImages.map((img, i) => (
                         <img key={i} src={img} alt={`Evidence ${i}`} className="w-20 h-20 object-cover rounded-lg border border-slate-700" />

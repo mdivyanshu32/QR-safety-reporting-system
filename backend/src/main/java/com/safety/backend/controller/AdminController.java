@@ -54,4 +54,15 @@ public class AdminController {
         Report updated = adminService.updateReportStatusAndAction(id, request);
         return ResponseEntity.ok(updated);
     }
+
+    @GetMapping("/settings/email")
+    public ResponseEntity<String> getDefaultEmail() {
+        return ResponseEntity.ok(adminService.getDefaultSafetyEmail());
+    }
+
+    @PostMapping("/settings/email")
+    public ResponseEntity<String> saveDefaultEmail(@RequestBody String email) {
+        String updated = adminService.saveDefaultSafetyEmail(email);
+        return ResponseEntity.ok(updated);
+    }
 }

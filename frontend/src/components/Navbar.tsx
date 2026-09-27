@@ -36,8 +36,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <h1 className="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">
                 {t('appTitle')}
               </h1>
-              <span className="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-500/30">
-                PRO 2026
+              <span className="bg-amber-500/20 text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-500/30 flex items-center gap-1">
+                🇮🇳 INDIA
               </span>
             </div>
             <p className="text-[11px] text-slate-400 font-medium hidden sm:block mt-0.5">
@@ -59,9 +59,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onEmergencyClick}
             className="flex items-center gap-1 bg-red-950/60 hover:bg-red-900/80 text-red-400 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-red-500/40 transition-colors"
-            title="Emergency Numbers Directory"
+            title="Emergency Helpline Numbers"
           >
-            <PhoneCall className="w-3.5 h-3.5" />
+            <PhoneCall className="w-3.5 h-3.5 text-red-400" />
             <span className="hidden sm:inline">Emergency</span>
           </button>
 
@@ -69,37 +69,39 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={onChecklistClick}
             className="flex items-center gap-1 bg-amber-950/60 hover:bg-amber-900/80 text-amber-400 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-amber-500/40 transition-colors"
-            title="Tool Safety Checklist"
+            title="Tool Checklist Upload"
           >
-            <CheckSquare className="w-3.5 h-3.5" />
+            <CheckSquare className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">Checklist</span>
           </button>
 
-          {/* Language Switcher */}
+          {/* India Flag Only Language Selector */}
           <div className="flex items-center bg-slate-800 p-0.5 rounded-lg border border-slate-700">
             <button
               onClick={() => setLanguage('hi')}
-              className={`px-2 py-1 text-xs font-bold rounded-md transition-all ${
+              className={`px-2 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1 ${
                 language === 'hi'
                   ? 'bg-amber-500 text-slate-950 shadow'
                   : 'text-slate-300 hover:text-white'
               }`}
             >
-              🇮🇳
+              <span>🇮🇳</span>
+              <span className="hidden sm:inline">हिंदी</span>
             </button>
             <button
               onClick={() => setLanguage('en')}
-              className={`px-2 py-1 text-xs font-bold rounded-md transition-all ${
+              className={`px-2 py-1 text-xs font-bold rounded-md transition-all flex items-center gap-1 ${
                 language === 'en'
                   ? 'bg-amber-500 text-slate-950 shadow'
                   : 'text-slate-300 hover:text-white'
               }`}
             >
-              🇬🇧
+              <span>🇮🇳</span>
+              <span className="hidden sm:inline">ENG</span>
             </button>
           </div>
 
-          {/* Admin Login */}
+          {/* Password Protected Admin Login */}
           <button
             onClick={onAdminClick}
             className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-amber-500/30 transition-colors shadow-sm"

@@ -24,6 +24,7 @@ public class ReportService {
     private final VoiceTranscriptRepository voiceTranscriptRepository;
     private final CorrectiveActionRepository correctiveActionRepository;
     private final EmailService emailService;
+    private final SystemSettingRepository systemSettingRepository;
 
     @Autowired
     public ReportService(ReportRepository reportRepository,
@@ -31,13 +32,15 @@ public class ReportService {
                          IdCardImageRepository idCardImageRepository,
                          VoiceTranscriptRepository voiceTranscriptRepository,
                          CorrectiveActionRepository correctiveActionRepository,
-                         EmailService emailService) {
+                         EmailService emailService,
+                         SystemSettingRepository systemSettingRepository) {
         this.reportRepository = reportRepository;
         this.reportImageRepository = reportImageRepository;
         this.idCardImageRepository = idCardImageRepository;
         this.voiceTranscriptRepository = voiceTranscriptRepository;
         this.correctiveActionRepository = correctiveActionRepository;
         this.emailService = emailService;
+        this.systemSettingRepository = systemSettingRepository;
     }
 
     @Transactional
@@ -113,7 +116,13 @@ public class ReportService {
 
         // Send Email Notification
         try {
-            emailService.sendReportNotificationEmail(savedReport, request.getRecipientEmail());
+            String targetEmail = request.getRecipientEmail();
+            if (targetEmail == null || targetEmail.isBlank()) {
+                targetEmail = systemSettingRepository.findById("DEFAULT_SAFETY_EMAIL")
+                        .map(SystemSetting::getSettingValue)
+                        .orElse("safety.officer@powergrid.in");
+            }
+            emailService.sendReportNotificationEmail(savedReport, targetEmail);
         } catch (Exception e) {
             System.err.println("WARN: Email notification trigger failed: " + e.getMessage());
         }
