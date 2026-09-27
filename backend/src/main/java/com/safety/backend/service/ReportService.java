@@ -23,20 +23,21 @@ public class ReportService {
     private final IdCardImageRepository idCardImageRepository;
     private final VoiceTranscriptRepository voiceTranscriptRepository;
     private final CorrectiveActionRepository correctiveActionRepository;
-
-    private static final AtomicLong counter = new AtomicLong(100);
+    private final EmailService emailService;
 
     @Autowired
     public ReportService(ReportRepository reportRepository,
                          ReportImageRepository reportImageRepository,
                          IdCardImageRepository idCardImageRepository,
                          VoiceTranscriptRepository voiceTranscriptRepository,
-                         CorrectiveActionRepository correctiveActionRepository) {
+                         CorrectiveActionRepository correctiveActionRepository,
+                         EmailService emailService) {
         this.reportRepository = reportRepository;
         this.reportImageRepository = reportImageRepository;
         this.idCardImageRepository = idCardImageRepository;
         this.voiceTranscriptRepository = voiceTranscriptRepository;
         this.correctiveActionRepository = correctiveActionRepository;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -108,6 +109,13 @@ public class ReportService {
         if ((rawVoice != null && !rawVoice.isBlank()) || (structJson != null && !structJson.isBlank())) {
             VoiceTranscript vt = new VoiceTranscript(savedReport.getId(), rawVoice, structJson);
             voiceTranscriptRepository.save(vt);
+        }
+
+        // Send Email Notification
+        try {
+            emailService.sendReportNotificationEmail(savedReport, request.getRecipientEmail());
+        } catch (Exception e) {
+            System.err.println("WARN: Email notification trigger failed: " + e.getMessage());
         }
 
         return new ReportResponseDTO(savedReport, savedIdCard, savedEvidence, rawVoice, structJson, null);

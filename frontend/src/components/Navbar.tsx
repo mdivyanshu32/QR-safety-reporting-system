@@ -1,12 +1,14 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Lock, MapPin, Zap } from 'lucide-react';
+import { Lock, MapPin, Zap, PhoneCall, CheckSquare } from 'lucide-react';
 
 interface NavbarProps {
   currentLocation?: string;
   currentDivision?: string;
   onAdminClick: () => void;
   onHomeClick: () => void;
+  onEmergencyClick: () => void;
+  onChecklistClick: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -14,6 +16,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentDivision,
   onAdminClick,
   onHomeClick,
+  onEmergencyClick,
+  onChecklistClick,
 }) => {
   const { language, setLanguage, t } = useLanguage();
 
@@ -43,44 +47,65 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {currentLocation && (
-          <div className="hidden md:flex items-center gap-1.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs px-2.5 py-1 rounded-full animate-pulse">
+          <div className="hidden lg:flex items-center gap-1.5 bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs px-2.5 py-1 rounded-full animate-pulse">
             <MapPin className="w-3.5 h-3.5 text-emerald-400" />
             <span className="font-semibold">{currentLocation}</span>
             {currentDivision && <span className="opacity-75">({currentDivision})</span>}
           </div>
         )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Emergency Contacts Nav Button */}
+          <button
+            onClick={onEmergencyClick}
+            className="flex items-center gap-1 bg-red-950/60 hover:bg-red-900/80 text-red-400 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-red-500/40 transition-colors"
+            title="Emergency Numbers Directory"
+          >
+            <PhoneCall className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Emergency</span>
+          </button>
+
+          {/* Tool Checklist Nav Button */}
+          <button
+            onClick={onChecklistClick}
+            className="flex items-center gap-1 bg-amber-950/60 hover:bg-amber-900/80 text-amber-400 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-amber-500/40 transition-colors"
+            title="Tool Safety Checklist"
+          >
+            <CheckSquare className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Checklist</span>
+          </button>
+
+          {/* Language Switcher */}
           <div className="flex items-center bg-slate-800 p-0.5 rounded-lg border border-slate-700">
             <button
               onClick={() => setLanguage('hi')}
-              className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+              className={`px-2 py-1 text-xs font-bold rounded-md transition-all ${
                 language === 'hi'
                   ? 'bg-amber-500 text-slate-950 shadow'
                   : 'text-slate-300 hover:text-white'
               }`}
             >
-              🇮🇳 हिंदी
+              🇮🇳
             </button>
             <button
               onClick={() => setLanguage('en')}
-              className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
+              className={`px-2 py-1 text-xs font-bold rounded-md transition-all ${
                 language === 'en'
                   ? 'bg-amber-500 text-slate-950 shadow'
                   : 'text-slate-300 hover:text-white'
               }`}
             >
-              🇬🇧 English
+              🇬🇧
             </button>
           </div>
 
+          {/* Admin Login */}
           <button
             onClick={onAdminClick}
-            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-500/30 transition-colors shadow-sm"
+            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold px-2.5 py-1.5 rounded-lg border border-amber-500/30 transition-colors shadow-sm"
           >
             <Lock className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">{t('adminAccess')}</span>
-            <span className="sm:hidden">Admin</span>
           </button>
         </div>
       </div>

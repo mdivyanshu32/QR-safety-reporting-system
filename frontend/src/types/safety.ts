@@ -86,6 +86,7 @@ export interface ReportSubmissionPayload {
   evidenceImages?: string[]; // Base64 array
   rawVoiceTranscript?: string;
   structuredVoiceJson?: string;
+  recipientEmail?: string;
 }
 
 export interface CorrectiveAction {

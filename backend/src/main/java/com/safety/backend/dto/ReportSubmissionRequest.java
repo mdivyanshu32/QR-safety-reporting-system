@@ -42,11 +42,12 @@ public class ReportSubmissionRequest {
     private Boolean firstAid;
     private Boolean hospitalRequired;
 
-    // Images & Voice
+    // Images & Voice & Email
     private String idCardImage; // Base64
     private List<String> evidenceImages; // List of Base64 strings
     private String rawVoiceTranscript;
     private String structuredVoiceJson;
+    private String recipientEmail;
 
     public ReportSubmissionRequest() {}
 
@@ -143,4 +144,7 @@ public class ReportSubmissionRequest {
 
     public String getStructuredVoiceJson() { return structuredVoiceJson; }
     public void setStructuredVoiceJson(String structuredVoiceJson) { this.structuredVoiceJson = structuredVoiceJson; }
+
+    public String getRecipientEmail() { return recipientEmail; }
+    public void setRecipientEmail(String recipientEmail) { this.recipientEmail = recipientEmail; }
 }

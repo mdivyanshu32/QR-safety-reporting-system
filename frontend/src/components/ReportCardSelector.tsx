@@ -1,18 +1,22 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import type { ReportType } from '../types/safety';
-import { Mic, Wrench, Shield, AlertTriangle, Flame, Activity, ChevronRight, Sparkles } from 'lucide-react';
+import { Mic, Wrench, Shield, AlertTriangle, Flame, Activity, ChevronRight, Sparkles, PhoneCall, CheckSquare } from 'lucide-react';
 
 interface ReportCardSelectorProps {
   onSelectType: (type: ReportType) => void;
   onVoiceStart: () => void;
+  onEmergencyClick: () => void;
+  onChecklistClick: () => void;
 }
 
 export const ReportCardSelector: React.FC<ReportCardSelectorProps> = ({
   onSelectType,
   onVoiceStart,
+  onEmergencyClick,
+  onChecklistClick,
 }) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const categories: {
     type: ReportType;
@@ -72,6 +76,50 @@ export const ReportCardSelector: React.FC<ReportCardSelectorProps> = ({
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto px-4 py-6">
+      {/* Quick Access Top Bar: Emergency & Tool Checklist */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div
+          onClick={onEmergencyClick}
+          className="bg-gradient-to-r from-red-950/80 to-slate-900 border border-red-500/40 hover:border-red-400 rounded-2xl p-4 shadow-xl cursor-pointer group flex items-center justify-between transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-red-500/20 text-red-400 rounded-xl border border-red-500/40 group-hover:scale-110 transition-transform">
+              <PhoneCall className="w-6 h-6 animate-pulse" />
+            </div>
+            <div>
+              <span className="text-[10px] font-black text-red-400 uppercase tracking-wider bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">
+                24x7 HOTLINE
+              </span>
+              <h3 className="text-base font-extrabold text-white mt-0.5">
+                {language === 'hi' ? 'क्षेत्र-वार आपातकालीन हेल्पलाइन' : 'Area Emergency Contacts'}
+              </h3>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-red-400 group-hover:translate-x-1 transition-transform" />
+        </div>
+
+        <div
+          onClick={onChecklistClick}
+          className="bg-gradient-to-r from-amber-950/80 to-slate-900 border border-amber-500/40 hover:border-amber-400 rounded-2xl p-4 shadow-xl cursor-pointer group flex items-center justify-between transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-amber-500/20 text-amber-400 rounded-xl border border-amber-500/40 group-hover:scale-110 transition-transform">
+              <CheckSquare className="w-6 h-6" />
+            </div>
+            <div>
+              <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                1000V & PPE CHECK
+              </span>
+              <h3 className="text-base font-extrabold text-white mt-0.5">
+                {language === 'hi' ? 'टूल्स सुरक्षा चेकलिस्ट अपलोड' : 'Upload Tool Safety Checklist'}
+              </h3>
+            </div>
+          </div>
+          <ChevronRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
+        </div>
+      </div>
+
+      {/* AI Voice Assistant CTA */}
       <div 
         onClick={onVoiceStart}
         className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-500 p-0.5 shadow-2xl shadow-amber-500/25 cursor-pointer group transform hover:-translate-y-0.5 transition-all"

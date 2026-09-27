@@ -3,7 +3,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import type { ReportSubmissionPayload } from '../../types/safety';
 import { CameraIdUploader } from './CameraIdUploader';
 import { EvidencePhotoPicker } from './EvidencePhotoPicker';
-import { Flame, ArrowLeft, Send, Forward } from 'lucide-react';
+import { Flame, ArrowLeft, Send, Forward, Mail } from 'lucide-react';
 
 interface IncidentReportFormProps {
   initialLocation?: string;
@@ -40,6 +40,7 @@ export const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
     description: '',
     severity: 'HIGH',
     evidenceImages: [],
+    recipientEmail: 'safety.officer@powergrid.in',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,6 +139,21 @@ export const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
               <option value="North Delhi">North Delhi</option>
             </select>
           </div>
+        </div>
+
+        <div className="pt-2">
+          <label className="block text-xs font-bold text-amber-400 mb-1 flex items-center gap-1.5">
+            <Mail className="w-3.5 h-3.5 text-amber-400" />
+            <span>Notification Target Email (Editable - Email Alert sent on submission)</span>
+          </label>
+          <input
+            type="email"
+            placeholder="e.g. safety.officer@powergrid.in"
+            required
+            value={formData.recipientEmail || ''}
+            onChange={(e) => setFormData({ ...formData, recipientEmail: e.target.value })}
+            className="w-full bg-slate-950 border border-amber-500/40 rounded-lg px-3 py-2 text-sm text-amber-300 font-medium focus:border-amber-400 focus:outline-none"
+          />
         </div>
       </div>
 
