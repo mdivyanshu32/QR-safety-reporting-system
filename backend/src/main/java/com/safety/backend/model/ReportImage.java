@@ -15,7 +15,7 @@ public class ReportImage {
     private Long reportId;
 
     @Lob
-    @Column(name = "image_data", columnDefinition = "LONGTEXT")
+    @Column(name = "image_data", columnDefinition = "TEXT")
     private String imageData; // Base64 encoded or URL
 
     @Column(name = "file_type")

@@ -14,7 +14,7 @@ public class IdCardImage {
     private Long reportId;
 
     @Lob
-    @Column(name = "id_card_data", columnDefinition = "LONGTEXT")
+    @Column(name = "id_card_data", columnDefinition = "TEXT")
     private String idCardData; // Base64 image data
 
     @Column(name = "file_type")

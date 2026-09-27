@@ -14,11 +14,11 @@ public class VoiceTranscript {
     private Long reportId;
 
     @Lob
-    @Column(name = "raw_transcript", columnDefinition = "LONGTEXT")
+    @Column(name = "raw_transcript", columnDefinition = "TEXT")
     private String rawTranscript;
 
     @Lob
-    @Column(name = "structured_json", columnDefinition = "LONGTEXT")
+    @Column(name = "structured_json", columnDefinition = "TEXT")
     private String structuredJson;
 
     public VoiceTranscript() {}
