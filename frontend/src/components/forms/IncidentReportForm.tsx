@@ -40,7 +40,7 @@ export const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
     description: '',
     severity: 'HIGH',
     evidenceImages: [],
-    recipientEmail: 'safety.officer@powergrid.in',
+    recipientEmail: 'divyanshmishra55432@gmail.com',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

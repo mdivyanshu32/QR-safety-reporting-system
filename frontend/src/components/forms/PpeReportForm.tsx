@@ -37,7 +37,7 @@ export const PpeReportForm: React.FC<PpeReportFormProps> = ({
     description: '',
     severity: 'HIGH',
     evidenceImages: [],
-    recipientEmail: 'safety.officer@powergrid.in',
+    recipientEmail: 'divyanshmishra55432@gmail.com',
   });
 
   const ppeList = [

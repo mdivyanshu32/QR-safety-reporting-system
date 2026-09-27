@@ -15,7 +15,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [reports, setReports] = useState<ReportDetailsResponse[]>([]);
-  const [defaultEmail, setDefaultEmail] = useState<string>('safety.officer@powergrid.in');
+  const [defaultEmail, setDefaultEmail] = useState<string>('divyanshmishra55432@gmail.com');
   const [savingEmail, setSavingEmail] = useState<boolean>(false);
   const [emailSavedSuccess, setEmailSavedSuccess] = useState<boolean>(false);
 

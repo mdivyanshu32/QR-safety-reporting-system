@@ -29,7 +29,7 @@ export const ToolChecklist: React.FC<ToolChecklistProps> = ({ onSubmit }) => {
   const [employeeId, setEmployeeId] = useState<string>('');
   const [location, setLocation] = useState<string>('Main Substation Yard');
   const [division, setDivision] = useState<string>('South Delhi');
-  const [recipientEmail, setRecipientEmail] = useState<string>('safety.officer@powergrid.in');
+  const [recipientEmail, setRecipientEmail] = useState<string>('divyanshmishra55432@gmail.com');
   
   const [uploadedDocs, setUploadedDocs] = useState<UploadedDocument[]>([]);
   const [submitting, setSubmitting] = useState<boolean>(false);

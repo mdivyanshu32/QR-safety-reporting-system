@@ -120,7 +120,7 @@ public class ReportService {
             if (targetEmail == null || targetEmail.isBlank()) {
                 targetEmail = systemSettingRepository.findById("DEFAULT_SAFETY_EMAIL")
                         .map(SystemSetting::getSettingValue)
-                        .orElse("safety.officer@powergrid.in");
+                        .orElse("divyanshmishra55432@gmail.com");
             }
             emailService.sendReportNotificationEmail(savedReport, targetEmail);
         } catch (Exception e) {

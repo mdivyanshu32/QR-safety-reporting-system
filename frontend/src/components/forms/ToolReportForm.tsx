@@ -37,7 +37,7 @@ export const ToolReportForm: React.FC<ToolReportFormProps> = ({
     description: '',
     severity: 'MEDIUM',
     evidenceImages: [],
-    recipientEmail: 'safety.officer@powergrid.in',
+    recipientEmail: 'divyanshmishra55432@gmail.com',
   });
 
   const toolsList = [

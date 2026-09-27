@@ -129,12 +129,12 @@ public class AdminService {
     public String getDefaultSafetyEmail() {
         return systemSettingRepository.findById("DEFAULT_SAFETY_EMAIL")
                 .map(com.safety.backend.model.SystemSetting::getSettingValue)
-                .orElse("safety.officer@powergrid.in");
+                .orElse("divyanshmishra55432@gmail.com");
     }
 
     @Transactional
     public String saveDefaultSafetyEmail(String email) {
-        String cleanEmail = email != null ? email.trim() : "safety.officer@powergrid.in";
+        String cleanEmail = email != null ? email.trim() : "divyanshmishra55432@gmail.com";
         com.safety.backend.model.SystemSetting setting = new com.safety.backend.model.SystemSetting("DEFAULT_SAFETY_EMAIL", cleanEmail);
         systemSettingRepository.save(setting);
         return cleanEmail;

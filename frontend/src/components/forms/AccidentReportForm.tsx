@@ -42,7 +42,7 @@ export const AccidentReportForm: React.FC<AccidentReportFormProps> = ({
     description: '',
     severity: 'CRITICAL',
     evidenceImages: [],
-    recipientEmail: 'safety.officer@powergrid.in',
+    recipientEmail: 'divyanshmishra55432@gmail.com',
   });
 
   const bodyParts = [

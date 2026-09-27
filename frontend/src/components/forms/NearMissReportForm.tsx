@@ -37,7 +37,7 @@ export const NearMissReportForm: React.FC<NearMissReportFormProps> = ({
     description: '',
     severity: 'HIGH',
     evidenceImages: [],
-    recipientEmail: 'safety.officer@powergrid.in',
+    recipientEmail: 'divyanshmishra55432@gmail.com',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
